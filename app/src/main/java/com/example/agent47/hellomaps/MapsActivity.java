@@ -4,12 +4,15 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.AsyncTask;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -18,6 +21,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,11 +34,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private static final int LOCATION_REQUEST = 500;
+    private static final int VIDEO_REQUEST = 499;
     ArrayList<LatLng> listPoints;
 
     @Override
@@ -47,7 +57,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MapsActivity.this,CameraActivity.class));
+                Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                if(intent.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(intent,VIDEO_REQUEST);
+                }
             }
         });
     }
@@ -89,8 +102,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                 }
                 mMap.addMarker(markerOptions);
-                if(listPoints.size() == 2)
+                if(listPoints.size() == 2) {
                     url = getRequestUrl(listPoints);
+                    new RequestDirectionsTask().execute(url);
+                }
             }
         });
     }
@@ -166,7 +181,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+            new ParserTask().execute(s);
+        }
+    }
+
+    public class ParserTask extends AsyncTask<String,Void,List<List<HashMap<String, String>>>> {
+
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... strings) {
+            List<List<HashMap<String, String>>> routes = null;
+            JSONObject jsonObject;
+            try {
+                jsonObject = new JSONObject(strings[0]);
+                DirectionsParser parser = new DirectionsParser();
+                routes = parser.parse(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> lists) {
+            ArrayList<LatLng> points = null;
+            PolylineOptions polylineOptions = null;
+
+            for(List<HashMap<String,String>> path: lists) {
+
+                points = new ArrayList<>();
+                polylineOptions = new PolylineOptions();
+
+                for(HashMap<String,String> point: path) {
+
+                    double lon = Double.parseDouble(point.get("lon"));
+                    double lat = Double.parseDouble(point.get("lat"));
+
+                    points.add(new LatLng(lat,lon));
+
+                }
+
+                polylineOptions.addAll(points);
+                polylineOptions.width(15);
+                polylineOptions.color(Color.BLUE);
+                polylineOptions.geodesic(true);
+            }
+
+            if(polylineOptions != null) {
+                mMap.addPolyline(polylineOptions);
+            }
+            else {
+                Toast.makeText(getApplicationContext(),"Directions not found",Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

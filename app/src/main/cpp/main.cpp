@@ -1,19 +1,17 @@
-//
-// Created by agent47 on 20/3/18.
-//
-
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <jni.h>
 
-using namespace std;
+extern "C"
+JNIEXPORT void
 
-int main(int argc, char** argv)
-{
+
+JNICALL Java_com_example_agent47_hellomaps_CameraActivity_getVideo(JNIEnv *env,jobject) {
     cv::VideoCapture cap(0);
     if(!cap.isOpened())
-        return -1;
+        return;
 
 
     cv::Mat edges;
@@ -28,5 +26,5 @@ int main(int argc, char** argv)
         imshow("edges", edges);
         if(cv::waitKey(30) >= 0) break;
     }
-    return 0;
+    return;
 }
