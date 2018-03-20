@@ -7,6 +7,7 @@ OpenCV, AI, AR based app that identifies and tracks lanes used for autonomous dr
 
 This is a project by team Vision. The goal is to detect lane lines on video using computer vision methods and show path on them in real time(OpenCV library).
 
+[![Watch the video](https://raw.github.com/GabLeRoux/WebMole/master/ressources/WebMole_Youtube_Video.png)](http://youtu.be/vt5fpE0bzSY)
 
 
 # Example processed video frame image
