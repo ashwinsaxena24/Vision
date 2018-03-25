@@ -5,7 +5,7 @@ Rajasthan Hackathon 4.0
 OpenCV, AI, AR based app that identifies and tracks lanes used for autonomous driving features such as lane changing, blindspot detection, hill crest detection, turn detection, vehicle detection and sign recognition. Along with this it also detects places of users desire and show information about them via augmented reality.
 
 
-This is a project by team Vision. The goal is to detect lane lines on video using computer vision methods and show path on them in real time(OpenCV library).
+This is a project by team Vision. The goal is to detect lane lines on video using computer vision methods and show path on them in real time(OpenCV library) using augmented reality.
 
 [![Presentation video](https://github.com/ashwinsaxena24/Vision/blob/master/video/Vis_App1.mp4)]
 
